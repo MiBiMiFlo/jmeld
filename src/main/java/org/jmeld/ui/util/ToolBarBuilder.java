@@ -26,7 +26,7 @@ public class ToolBarBuilder
 {
   public ToolBarBuilder(JComponent toolBar)
   {
-    super(toolBar, new FormLayout("", "fill:p"));
+    super(new FormLayout("", "fill:p"), toolBar);
 
     initialize();
   }
