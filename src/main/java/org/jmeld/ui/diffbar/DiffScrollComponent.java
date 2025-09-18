@@ -22,6 +22,7 @@ import org.jmeld.diff.JMRevision;
 import org.jmeld.diff.TypeDiff;
 import org.jmeld.settings.EditorSettings;
 import org.jmeld.settings.JMeldSettings;
+import org.jmeld.ui.AbstractDiffPanel;
 import org.jmeld.ui.BufferDiffPanel;
 import org.jmeld.ui.FilePanel;
 import org.jmeld.ui.text.BufferDocumentIF;
@@ -42,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiffScrollComponent extends JComponent implements ChangeListener, ConfigurationListenerIF {
-    private BufferDiffPanel diffPanel;
+    private AbstractDiffPanel diffPanel;
     private int fromPanelIndex;
     private int toPanelIndex;
     private List<Command> commands;
@@ -53,7 +54,7 @@ public class DiffScrollComponent extends JComponent implements ChangeListener, C
 
     private boolean drawCurves;
 
-    public DiffScrollComponent(BufferDiffPanel diffPanel, int fromPanelIndex,
+    public DiffScrollComponent(AbstractDiffPanel diffPanel, int fromPanelIndex,
                                int toPanelIndex) {
         this.diffPanel = diffPanel;
         this.fromPanelIndex = fromPanelIndex;

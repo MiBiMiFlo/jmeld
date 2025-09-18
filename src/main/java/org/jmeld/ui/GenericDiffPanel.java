@@ -1,23 +1,52 @@
-/*
-   JMeld is a visual diff and merge tool.
-   Copyright (C) 2007  Kees Kuip
-   This library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-   This library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-   You should have received a copy of the GNU Lesser General Public
-   License along with this library; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA  02110-1301  USA
- */
 package org.jmeld.ui;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.MatteBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainDocument;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import org.jmeld.JMeldException;
 import org.jmeld.diff.JMChunk;
 import org.jmeld.diff.JMDelta;
@@ -25,6 +54,7 @@ import org.jmeld.diff.JMDiff;
 import org.jmeld.diff.JMRevision;
 import org.jmeld.model.LevenshteinTableModel;
 import org.jmeld.settings.JMeldSettings;
+import org.jmeld.ui.BufferDiffPanel.Zoom;
 import org.jmeld.ui.diffbar.DiffScrollComponent;
 import org.jmeld.ui.search.SearchCommand;
 import org.jmeld.ui.search.SearchHit;
@@ -37,31 +67,12 @@ import org.jmeld.util.conf.ConfigurationListenerIF;
 import org.jmeld.util.node.BufferNode;
 import org.jmeld.util.node.JMDiffNode;
 
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
-import javax.swing.event.*;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.PlainDocument;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationListenerIF {
+public class GenericDiffPanel extends AbstractDiffPanel implements ConfigurationListenerIF {
     public static final int LEFT = 0;
     public static final int MIDDLE = 1; //TODO: Usar el comparador del medio con dos JDiff
     public static final int RIGHT = 2;
     public static final int NUMBER_OF_PANELS = 3;
-    private JMeldPanel mainPanel;
+
     private FilePanel[] filePanels;
     private JMDiffNode diffNode;
     int filePanelSelectedIndex = -1;
@@ -81,14 +92,15 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
     static Color selectionColor = Color.BLUE;
     static Color newColor = Color.CYAN;
     static Color mixColor = Color.WHITE;
+    
     static {
         selectionColor = new Color(selectionColor.getRed() * newColor.getRed()/mixColor.getRed()
                 ,selectionColor.getGreen() * newColor.getGreen()/mixColor.getGreen()
                 ,selectionColor.getBlue() * newColor.getBlue()/mixColor.getBlue());
     }
 
-    BufferDiffPanel(JMeldPanel mainPanel) {
-        this.mainPanel = mainPanel;
+    public GenericDiffPanel() {
+        
         readConfig();
         JMeldSettings.getInstance().addConfigurationListener(this);
         diff = new JMDiff();
@@ -167,7 +179,6 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         refreshTreeModel();
         refreshLevensteinModel();
 
-        mainPanel.repaint();
     }
 
     private void refreshTreeModel() {
@@ -329,14 +340,23 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
 
         // panel for file1
         filePanel.add(new RevisionBar(this, filePanels[LEFT], true), cc.xy(2, 4));
-        if (mainPanel.SHOW_FILE_SAVE_BAR_OPTION.isEnabled()) {
+        
+        boolean isShowFileSaveBar= false;
+        boolean isShowFileLabel=false;
+        boolean isShowFileStatusBar=false;
+
+//        isShowFileSaveBar = mainPanel.SHOW_FILE_SAVE_BAR_OPTION.isEnabled();
+//        isShowFileLabel = mainPanel.SHOW_FILE_LABEL_OPTION.isEnabled();
+//        isShowFileStatusBar=mainPanel.SHOW_FILE_STATUSBAR_OPTION.isEnabled();
+        
+        if (isShowFileSaveBar) {
             filePanel.add(filePanels[LEFT].getSaveButton(), cc.xy(2, 2));
         }
-        if (mainPanel.SHOW_FILE_LABEL_OPTION.isEnabled()) {
+        if (isShowFileLabel) {
             filePanel.add(filePanels[LEFT].getFileLabel(), cc.xyw(4, 2, 3));
         }
         filePanel.add(filePanels[LEFT].getScrollPane(), cc.xyw(4, 4, 3));
-        if (mainPanel.SHOW_FILE_STATUSBAR_OPTION.isEnabled()) {
+        if (isShowFileStatusBar) {
             filePanel.add(filePanels[LEFT].getFilePanelBar(), cc.xyw(4, 5, 3));
         }
 
@@ -345,14 +365,14 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
 
         // panel for file2
         filePanel.add(new RevisionBar(this, filePanels[RIGHT], false), cc.xy(12, 4));
-        if (mainPanel.SHOW_FILE_LABEL_OPTION.isEnabled()) {
+        if (isShowFileLabel) {
             filePanel.add(filePanels[RIGHT].getFileLabel(), cc.xyw(8, 2, 3));
         }
         filePanel.add(filePanels[RIGHT].getScrollPane(), cc.xyw(8, 4, 3));
-        if (mainPanel.SHOW_FILE_SAVE_BAR_OPTION.isEnabled()) {
+        if (isShowFileSaveBar) {
             filePanel.add(filePanels[RIGHT].getSaveButton(), cc.xy(12, 2));
         }
-        if (mainPanel.SHOW_FILE_STATUSBAR_OPTION.isEnabled()) {
+        if (isShowFileStatusBar) {
             filePanel.add(filePanels[RIGHT].getFilePanelBar(), cc.xyw(8, 5, 3));
         }
 
@@ -833,7 +853,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
             return true;
         }
 
-        dialog = new SavePanelDialog(mainPanel);
+        dialog = new SavePanelDialog(this);
         for (FilePanel filePanel : filePanels) {
             if (filePanel != null) {
                 dialog.add(filePanel.getBufferDocument());
@@ -869,7 +889,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
                 document.write();
             } catch (JMeldException ex) {
                 ex.printStackTrace();
-                JOptionPane.showMessageDialog(mainPanel, "Can't write file"
+                JOptionPane.showMessageDialog(this, "Can't write file"
                         + document.getName(),
                         "Problem writing file", JOptionPane.ERROR_MESSAGE);
             }
@@ -897,7 +917,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
     }
 
     public SearchCommand getSearchCommand() {
-        return mainPanel.getSearchCommand();
+        return null;
     }
 
     @Override
@@ -1014,10 +1034,6 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         }
     }
 
-    @Override
-    public void checkActions() {
-        mainPanel.checkActions();
-    }
 
     @Override
     public void doLeft(boolean shift) {
@@ -1400,8 +1416,8 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
     }
 
     private void readConfig() {
-        setShowTree(JMeldSettings.getInstance().getEditor().isShowTreeChunks());
-        setShowLevenstein(JMeldSettings.getInstance().getEditor().isShowLevenstheinEditor());
+        //setShowTree(JMeldSettings.getInstance().getEditor().isShowTreeChunks());
+        //setShowLevenstein(JMeldSettings.getInstance().getEditor().isShowLevenstheinEditor());
     }
 
     class Zoom {

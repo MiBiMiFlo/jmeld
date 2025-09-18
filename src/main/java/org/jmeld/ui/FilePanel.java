@@ -47,7 +47,7 @@ import java.awt.event.*;
 public class FilePanel implements BufferDocumentChangeListenerIF, ConfigurationListenerIF {
     private static final int MAXSIZE_CHANGE_DIFF = 1000;
 
-    private BufferDiffPanel diffPanel;
+    private AbstractDiffPanel diffPanel;
     private String name;
     private int position;
     private DiffLabel fileLabel;
@@ -61,7 +61,7 @@ public class FilePanel implements BufferDocumentChangeListenerIF, ConfigurationL
     private boolean selected;
     private FilePanelBar filePanelBar;
 
-    FilePanel(BufferDiffPanel diffPanel, String name, int position) {
+    FilePanel(AbstractDiffPanel diffPanel, String name, int position) {
         this.diffPanel = diffPanel;
         this.name = name;
         this.position = position;

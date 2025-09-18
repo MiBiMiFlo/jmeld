@@ -31,13 +31,13 @@ import java.util.List;
 
 public class ScrollSynchronizer
 {
-  private BufferDiffPanel diffPanel;
+  private AbstractDiffPanel diffPanel;
   private FilePanel filePanelLeft;
   private FilePanel filePanelRight;
   private AdjustmentListener horizontalAdjustmentListener;
   private AdjustmentListener verticalAdjustmentListener;
 
-  public ScrollSynchronizer(BufferDiffPanel diffPanel, FilePanel filePanelLeft,
+  public ScrollSynchronizer(AbstractDiffPanel diffPanel, FilePanel filePanelLeft,
       FilePanel filePanelRight)
   {
     this.diffPanel = diffPanel;

@@ -30,14 +30,14 @@ import java.util.List;
 public class SavePanelDialog
 {
   // Instance variables:
-  private JMeldPanel meldPanel;
+  private JComponent parent;
   private boolean ok;
   private List<BufferDocumentIF> documents;
   private JCheckBox[] checkBoxes;
 
-  public SavePanelDialog(JMeldPanel meldPanel)
+  public SavePanelDialog(JComponent parent)
   {
-    this.meldPanel = meldPanel;
+    this.parent = parent;
 
     documents = new ArrayList<BufferDocumentIF>();
   }
@@ -55,7 +55,7 @@ public class SavePanelDialog
     pane = new JOptionPane(getSavePanel(), JOptionPane.WARNING_MESSAGE);
     pane.setOptionType(JOptionPane.OK_CANCEL_OPTION);
 
-    dialog = pane.createDialog(meldPanel, "Save files");
+    dialog = pane.createDialog(parent, "Save files");
     dialog.setResizable(true);
     try
     {
@@ -107,7 +107,7 @@ public class SavePanelDialog
       catch (JMeldException ex)
       {
         ex.printStackTrace();
-        JOptionPane.showMessageDialog(meldPanel, "Can't write file"
+        JOptionPane.showMessageDialog(parent, "Can't write file"
                                                  + document.getName(),
           "Problem writing file", JOptionPane.ERROR_MESSAGE);
       }
