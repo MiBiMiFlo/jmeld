@@ -1,6 +1,5 @@
 package org.jmeld.ui;
 
-import org.jdesktop.swingworker.SwingWorker;
 import org.jmeld.ui.util.ImageUtil;
 import org.jmeld.util.StringUtil;
 import org.jmeld.util.node.JMDiffNode;

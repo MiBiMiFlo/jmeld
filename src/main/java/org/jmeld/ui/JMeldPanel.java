@@ -423,9 +423,9 @@ public class JMeldPanel extends JPanel implements ConfigurationListenerIF, Prope
 
     public void propertyChange(PropertyChangeEvent evt) {
         if ("state".equals(evt.getPropertyName())
-                && org.jdesktop.swingworker.SwingWorker.StateValue.DONE.equals(evt.getNewValue())) {
+                && SwingWorker.StateValue.DONE.equals(evt.getNewValue())) {
             try {
-                String result = (String)((org.jdesktop.swingworker.SwingWorker) evt.getSource()).get();
+                String result = (String)((SwingWorker) evt.getSource()).get();
                 if (result != null) {
                     launchDialog();
                 }
@@ -448,7 +448,7 @@ public class JMeldPanel extends JPanel implements ConfigurationListenerIF, Prope
         dialog.show();
 
 
-        org.jdesktop.swingworker.SwingWorker<String, Object> worker = null;
+        SwingWorker<String, Object> worker = null;
         if (dialog.getFunction() == PanelDialog.Function.FILE_COMPARISON) {
             worker = new FileComparison(this, new File(dialog.getLeftFileName()), new File(dialog
                         .getRightFileName()));

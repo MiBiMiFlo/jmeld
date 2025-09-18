@@ -1,7 +1,6 @@
 package org.jmeld.ui;
 
 import com.jidesoft.swing.JideTabbedPane;
-import org.jdesktop.swingworker.SwingWorker;
 import org.jmeld.ui.util.ImageUtil;
 import org.jmeld.util.StringUtil;
 import org.jmeld.util.file.DirectoryDiff;

@@ -16,7 +16,6 @@
  */
 package org.jmeld.ui;
 
-import org.jdesktop.swingworker.SwingWorker;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.treetable.TreeTableNode;
