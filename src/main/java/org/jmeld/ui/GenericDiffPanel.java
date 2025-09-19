@@ -54,7 +54,6 @@ import org.jmeld.diff.JMDiff;
 import org.jmeld.diff.JMRevision;
 import org.jmeld.model.LevenshteinTableModel;
 import org.jmeld.settings.JMeldSettings;
-import org.jmeld.ui.BufferDiffPanel.Zoom;
 import org.jmeld.ui.diffbar.DiffScrollComponent;
 import org.jmeld.ui.search.SearchCommand;
 import org.jmeld.ui.search.SearchHit;
@@ -88,7 +87,8 @@ public class GenericDiffPanel extends AbstractDiffPanel implements Configuration
     private boolean showLevenstein;
     private JSplitPane splitPane;
     private JCheckBox checkSolutionPath;
-
+    private DiffScrollComponent diffScrollComponent;
+    
     static Color selectionColor = Color.BLUE;
     static Color newColor = Color.CYAN;
     static Color mixColor = Color.WHITE;
@@ -178,7 +178,7 @@ public class GenericDiffPanel extends AbstractDiffPanel implements Configuration
 
         refreshTreeModel();
         refreshLevensteinModel();
-
+        diffScrollComponent.repaint();
     }
 
     private void refreshTreeModel() {
@@ -360,7 +360,7 @@ public class GenericDiffPanel extends AbstractDiffPanel implements Configuration
             filePanel.add(filePanels[LEFT].getFilePanelBar(), cc.xyw(4, 5, 3));
         }
 
-        DiffScrollComponent diffScrollComponent = new DiffScrollComponent(this, LEFT, RIGHT);
+        diffScrollComponent = new DiffScrollComponent(this, LEFT, RIGHT);
         filePanel.add(diffScrollComponent, cc.xy(7, 4));
 
         // panel for file2

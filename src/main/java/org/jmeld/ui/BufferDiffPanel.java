@@ -18,6 +18,51 @@ package org.jmeld.ui;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTree;
+import javax.swing.JViewport;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.border.MatteBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainDocument;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import org.jmeld.JMeldException;
 import org.jmeld.diff.JMChunk;
 import org.jmeld.diff.JMDelta;
@@ -37,30 +82,8 @@ import org.jmeld.util.conf.ConfigurationListenerIF;
 import org.jmeld.util.node.BufferNode;
 import org.jmeld.util.node.JMDiffNode;
 
-import javax.swing.*;
-import javax.swing.border.MatteBorder;
-import javax.swing.event.*;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.PlainDocument;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationListenerIF {
-    public static final int LEFT = 0;
-    public static final int MIDDLE = 1; //TODO: Usar el comparador del medio con dos JDiff
-    public static final int RIGHT = 2;
-    public static final int NUMBER_OF_PANELS = 3;
+
     private JMeldPanel mainPanel;
     private FilePanel[] filePanels;
     private JMDiffNode diffNode;
@@ -77,6 +100,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
     private boolean showLevenstein;
     private JSplitPane splitPane;
     private JCheckBox checkSolutionPath;
+    private DiffScrollComponent diffScrollComponent;
 
     static Color selectionColor = Color.BLUE;
     static Color newColor = Color.CYAN;
@@ -115,8 +139,8 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
     }
 
     public void setDiffNode(JMDiffNode diffNode) {
-       this.diffNode = diffNode;
-       refreshDiffNode();
+        this.diffNode = diffNode;
+        refreshDiffNode();
     }
 
     public JMDiffNode getDiffNode() {
@@ -134,7 +158,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
     }
 
     private void setBufferDocuments(BufferDocumentIF bd1, BufferDocumentIF bd2,
-                                    JMDiff diff, JMRevision revision) {
+            JMDiff diff, JMRevision revision) {
         this.diff = diff;
 
         currentRevision = revision;
@@ -168,6 +192,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         refreshLevensteinModel();
 
         mainPanel.repaint();
+        diffScrollComponent.repaint();
     }
 
     private void refreshTreeModel() {
@@ -202,17 +227,17 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         title = "";
         if (titles.size() == 1) {
             title = titles.get(0);
+        }
+        else if (titles.get(0).equals(titles.get(1))) {
+            title = titles.get(0);
         } else {
-            if (titles.get(0).equals(titles.get(1))) {
-                title = titles.get(0);
-            } else {
-                title = titles.get(0) + "-" + titles.get(1);
-            }
+            title = titles.get(0) + "-" + titles.get(1);
         }
 
         return title;
     }
 
+    @Override
     public boolean revisionChanged(JMDocumentEvent de) {
         FilePanel fp;
         BufferDocumentIF bd1;
@@ -255,6 +280,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         return null;
     }
 
+    @Override
     public void diff() {
         BufferDocumentIF bd1;
         BufferDocumentIF bd2;
@@ -264,9 +290,9 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
 
         if (bd1 != null && bd2 != null) {
             try {currentRevision = diff.diff(bd1.getLines(), bd2.getLines()
-                        , getDiffNode().getIgnore());
+                    , getDiffNode().getIgnore());
 
-                reDisplay();
+            reDisplay();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -340,7 +366,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
             filePanel.add(filePanels[LEFT].getFilePanelBar(), cc.xyw(4, 5, 3));
         }
 
-        DiffScrollComponent diffScrollComponent = new DiffScrollComponent(this, LEFT, RIGHT);
+        diffScrollComponent = new DiffScrollComponent(this, LEFT, RIGHT);
         filePanel.add(diffScrollComponent, cc.xy(7, 4));
 
         // panel for file2
@@ -490,7 +516,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
                                 List<JMDelta> changeDeltas = changeRevision.getDeltas();
                                 changeDeltas.add(new JMDelta(new JMChunk(selectedRow - 2 - leftEditor.getLineStartOffset(firstLine), selectedRowCount)
                                         , new JMChunk(selectedColumn - 2 - leftEditor.getLineStartOffset(firstCol), selectedColumnCount)
-                                ));
+                                        ));
                                 reDisplay();
                             } catch (BadLocationException e1) {
                                 System.out.println("Error building delta: " + e1.getMessage());
@@ -512,6 +538,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
                     return deltaDefined;
                 }
 
+                @Override
                 public void mousePressed(MouseEvent e) {
                     if (e.isPopupTrigger()) {
                         showPopup(e);
@@ -643,6 +670,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
              * Falso si el tamaño de la tabla no es el tamaño del JScrollPane
              * @return
              */
+            @Override
             public boolean getScrollableTracksViewportWidth() {
                 boolean ok = false;
                 if (autoResizeMode != AUTO_RESIZE_OFF) {
@@ -697,7 +725,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
             @Override
             public void stateChanged(ChangeEvent e) {
                 ((LevenshteinTableModel) levensteinGraphTable.getModel())
-                        .setShowSelectionPath(checkSolutionPath.isSelected());
+                .setShowSelectionPath(checkSolutionPath.isSelected());
                 levensteinGraphTable.repaint();
             }
         });
@@ -720,9 +748,9 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
             }
         };
         levensteinGraphTable.getColumnModel().getSelectionModel()
-                .addListSelectionListener(listSelectionListener);
+        .addListSelectionListener(listSelectionListener);
         levensteinGraphTable.getSelectionModel()
-                .addListSelectionListener(listSelectionListener);
+        .addListSelectionListener(listSelectionListener);
         filePanels[LEFT].getEditor().addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
@@ -813,6 +841,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         }
     }
 
+    @Override
     public void toNextDelta(boolean next) {
         if (next) {
             doDown();
@@ -821,6 +850,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         }
     }
 
+    @Override
     public JMRevision getCurrentRevision() {
         return currentRevision;
     }
@@ -896,6 +926,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         }
     }
 
+    @Override
     public SearchCommand getSearchCommand() {
         return mainPanel.getSearchCommand();
     }
@@ -991,6 +1022,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         return null;
     }
 
+    @Override
     public void setSelectedPanel(FilePanel fp) {
         int index;
 
@@ -1029,6 +1061,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         runChange(LEFT, RIGHT, shift);
     }
 
+    @Override
     public void runChange(int fromPanelIndex, int toPanelIndex, boolean shift) {
         JMDelta delta;
         BufferDocumentIF fromBufferDocument;
@@ -1108,7 +1141,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
             if (!shift) {
                 toEditor.replaceSelection(s);
             } else {
-//                toEditor.getDocument().insertString(fromOffset, s, null);
+                //                toEditor.getDocument().insertString(fromOffset, s, null);
                 toEditor.getDocument().insertString(toOffset, s, null);
             }
             getUndoHandler().end("replace");
@@ -1120,6 +1153,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         }
     }
 
+    @Override
     public void runDelete(int fromPanelIndex, int toPanelIndex) {
         JMDelta delta;
         BufferDocumentIF bufferDocument;
@@ -1211,12 +1245,11 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
             }
 
             setSelectedDelta(d);
-        } else {
-            // Select the next delta if there is any.
+        }
+        else // Select the next delta if there is any.
             if (index + 1 < deltas.size()) {
                 setSelectedDelta(deltas.get(index + 1));
             }
-        }
 
         showSelectedDelta();
     }
@@ -1254,20 +1287,21 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
             }
 
             setSelectedDelta(d);
-        } else {
-            // Select the next delta if there is any.
+        }
+        else // Select the next delta if there is any.
             if (index - 1 >= 0) {
                 setSelectedDelta(deltas.get(index - 1));
             }
-        }
         showSelectedDelta();
     }
 
+    @Override
     public void doGotoDelta(JMDelta delta) {
         setSelectedDelta(delta);
         showSelectedDelta();
     }
 
+    @Override
     public void doGotoLine(int line) {
         BufferDocumentIF bd;
         int offset;
@@ -1408,6 +1442,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         Font font;
     }
 
+    @Override
     public void setSelectedDelta(JMDelta delta) {
         selectedDelta = delta;
         setSelectedLine(delta == null ? 0 : delta.getOriginal().getAnchor());
@@ -1428,6 +1463,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         scrollSynchronizer.showDelta(delta);
     }
 
+    @Override
     public JMDelta getSelectedDelta() {
         List<JMDelta> deltas;
 
@@ -1443,6 +1479,7 @@ public class BufferDiffPanel extends AbstractDiffPanel implements ConfigurationL
         return selectedDelta;
     }
 
+    @Override
     public FilePanel getFilePanel(int index) {
         if (index < 0 || index > filePanels.length) {
             return null;

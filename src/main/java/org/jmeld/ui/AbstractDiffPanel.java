@@ -7,6 +7,11 @@ import org.jmeld.ui.text.JMDocumentEvent;
 
 public abstract class AbstractDiffPanel extends AbstractContentPanel
 {
+    public static final int LEFT = 0;
+    public static final int MIDDLE = 1; //TODO: Usar el comparador del medio con dos JDiff
+    public static final int RIGHT = 2;
+    public static final int NUMBER_OF_PANELS = 3;
+    
     public abstract JMRevision getCurrentRevision() ;
     
     public abstract SearchCommand getSearchCommand();
